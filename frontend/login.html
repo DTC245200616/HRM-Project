@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập | HRM Workspace</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body class="login-page">
+  <main class="login-layout">
+
+    <!-- GIỚI THIỆU BÊN TRÁI -->
+    <section class="login-showcase">
+      <div class="showcase-brand">
+        <span class="brand-mark">H</span>
+        <span>HRM <strong>Workspace</strong></span>
+      </div>
+
+      <div class="showcase-content">
+        <span class="showcase-kicker">
+          GIẢI PHÁP QUẢN TRỊ NHÂN SỰ
+        </span>
+
+        <h1>
+          Mọi hoạt động nhân sự.<br>
+          <em>Một nơi duy nhất.</em>
+        </h1>
+
+        <p>
+          Quản lý nhân viên, phòng ban và chấm công hiệu quả
+          với không gian làm việc trực quan, chuyên nghiệp.
+        </p>
+
+        <div class="showcase-features">
+          <span>✓ Hồ sơ nhân sự tập trung</span>
+          <span>✓ Theo dõi chấm công</span>
+          <span>✓ Quản lý phòng ban</span>
+        </div>
+      </div>
+
+      <p class="showcase-footer">© 2026 HRM Workspace</p>
+
+      <div class="decor-circle decor-one"></div>
+      <div class="decor-circle decor-two"></div>
+    </section>
+
+    <!-- FORM ĐĂNG NHẬP BÊN PHẢI -->
+    <section class="login-form-area">
+      <div class="login-card">
+
+        <div class="login-mobile-brand">
+          <span class="brand-mark">H</span>
+          <strong>HRM Workspace</strong>
+        </div>
+
+        <div class="login-badge">
+          CHÀO MỪNG TRỞ LẠI
+        </div>
+
+        <h2>Đăng nhập tài khoản</h2>
+
+        <p class="login-description">
+          Vui lòng nhập thông tin để truy cập hệ thống HRM.
+        </p>
+
+        <form id="loginForm">
+
+          <!-- EMAIL -->
+          <div class="field">
+            <label for="email">Email</label>
+
+            <input
+              id="email"
+              type="email"
+              autocomplete="username"
+              placeholder="admin@hrm.local"
+              maxlength="150"
+              required
+            >
+          </div>
+
+          <!-- MẬT KHẨU -->
+          <div class="field">
+            <label for="password">Mật khẩu</label>
+
+            <div class="password-wrap">
+              <input
+                id="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Nhập mật khẩu của bạn"
+                required
+              >
+
+              <button
+                id="togglePassword"
+                type="button"
+                class="password-toggle"
+                aria-label="Hiện mật khẩu"
+              >
+                Hiện
+              </button>
+            </div>
+          </div>
+
+          <div class="login-options">
+            <label class="remember-info">
+              <span class="shield-icon">♢</span>
+              Kết nối an toàn
+            </label>
+          </div>
+
+          <!-- NÚT ĐĂNG NHẬP -->
+          <button
+            id="loginButton"
+            type="submit"
+            class="btn btn-primary login-submit"
+          >
+            Đăng nhập <span>→</span>
+          </button>
+
+          <p
+            id="error"
+            class="login-error"
+            role="alert"
+          ></p>
+        </form>
+
+        <p class="login-help">
+          Bạn chưa có tài khoản?
+          Liên hệ quản trị viên để được cấp quyền.
+        </p>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ======================================
+    // API QUA NGINX
+    // ======================================
+
+    const API_URL = "/api";
+
+    const form = document.getElementById("loginForm");
+    const errorBox = document.getElementById("error");
+    const submitButton = document.getElementById("loginButton");
+    const toggleButton = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+
+    // ======================================
+    // HIỆN / ẨN MẬT KHẨU
+    // ======================================
+
+    toggleButton.addEventListener("click", () => {
+      const hidden = passwordInput.type === "password";
+
+      passwordInput.type = hidden ? "text" : "password";
+      toggleButton.textContent = hidden ? "Ẩn" : "Hiện";
+
+      toggleButton.setAttribute(
+        "aria-label",
+        hidden ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+      );
+    });
+
+    // ======================================
+    // CHUYỂN TRANG THEO VAI TRÒ
+    // ======================================
+
+    function redirectByRole(role) {
+      if (role === "employee") {
+        window.location.replace("./accounts.html");
+        return;
+      }
+
+      if (role === "admin" || role === "hr") {
+        window.location.replace("./index.html");
+        return;
+      }
+
+      errorBox.textContent =
+        "Tài khoản chưa được cấp quyền truy cập.";
+    }
+
+    // ======================================
+    // XÓA PHIÊN ĐĂNG NHẬP
+    // ======================================
+
+    function clearSession() {
+      sessionStorage.removeItem("hrm_token");
+      sessionStorage.removeItem("hrm_user");
+    }
+
+    // ======================================
+    // KIỂM TRA PHIÊN ĐĂNG NHẬP CŨ
+    // ======================================
+
+    async function checkSession() {
+      const token = sessionStorage.getItem("hrm_token");
+
+      if (!token) return;
+
+      try {
+        const response = await fetch(API_URL + "/auth/me", {
+          headers: {
+            Authorization: "Bearer " + token
+          },
+          cache: "no-store"
+        });
+
+        if (response.ok) {
+          const user = await response.json();
+
+          if (!["admin", "hr", "employee"].includes(user.role)) {
+            clearSession();
+            return;
+          }
+
+          sessionStorage.setItem(
+            "hrm_user",
+            JSON.stringify(user)
+          );
+
+          redirectByRole(user.role);
+          return;
+        }
+
+        if (response.status === 401 || response.status === 403) {
+          clearSession();
+        }
+
+      } catch (error) {
+        console.error("Lỗi kiểm tra phiên đăng nhập:", error);
+      }
+    }
+
+    // ======================================
+    // XỬ LÝ ĐĂNG NHẬP
+    // ======================================
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      errorBox.textContent = "";
+      submitButton.disabled = true;
+      submitButton.textContent = "Đang xác thực...";
+
+      try {
+        const email = document
+          .getElementById("email")
+          .value.trim();
+
+        const password = passwordInput.value;
+
+        const response = await fetch(API_URL + "/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+          throw new Error(
+            "Máy chủ trả về dữ liệu không hợp lệ. Kiểm tra Nginx và Backend."
+          );
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "Đăng nhập thất bại"
+          );
+        }
+
+        if (
+          !data.token ||
+          !data.user ||
+          !["admin", "hr", "employee"].includes(data.user.role)
+        ) {
+          throw new Error(
+            "Thông tin đăng nhập trả về không hợp lệ"
+          );
+        }
+
+        // LƯU TOKEN JWT
+        sessionStorage.setItem(
+          "hrm_token",
+          data.token
+        );
+
+        // LƯU THÔNG TIN NGƯỜI DÙNG
+        sessionStorage.setItem(
+          "hrm_user",
+          JSON.stringify(data.user)
+        );
+
+        // CHUYỂN ĐÚNG TRANG THEO VAI TRÒ
+        redirectByRole(data.user.role);
+
+      } catch (error) {
+        errorBox.textContent =
+          error instanceof TypeError
+            ? "Không kết nối được máy chủ. Kiểm tra Docker và Nginx."
+            : error.message;
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = "Đăng nhập <span>→</span>";
+      }
+    });
+
+    // ======================================
+    // KHỞI TẠO
+    // ======================================
+
+    checkSession();
+
+  </script>
+
+</body>
+</html>

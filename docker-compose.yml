@@ -1,0 +1,116 @@
+
+services:
+  # ==============================
+  # DATABASE POSTGRESQL
+  # ==============================
+  postgres:
+    image: postgres:16
+    container_name: hrm-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: hrm_db
+      POSTGRES_USER: hrm_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    networks:
+      - hrm-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrm_user -d hrm_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==============================
+  # PGADMIN
+  # ==============================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hrm-pgadmin
+    restart: unless-stopped
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+
+    ports:
+      - "127.0.0.1:5050:80"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - hrm-network
+
+  # ==============================
+  # BACKEND NODE.JS
+  # ==============================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: hrm-backend
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: hrm_user
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: hrm_db
+      JWT_SECRET: ${JWT_SECRET}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    expose:
+      - "3000"
+
+    networks:
+      - hrm-network
+
+  # ==============================
+  # NGINX REVERSE PROXY
+  # ==============================
+  nginx:
+    image: nginx:stable-alpine
+    container_name: hrm-nginx
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8080:80"
+
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+    depends_on:
+      - backend
+
+    networks:
+      - hrm-network
+
+# ==============================
+# NETWORK
+# ==============================
+networks:
+  hrm-network:
+    driver: bridge
+
+# ==============================
+# VOLUME
+# ==============================
+volumes:
+  postgres_data:

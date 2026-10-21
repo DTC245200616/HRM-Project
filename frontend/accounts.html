@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý tài khoản | HRM</title>
+  <link rel="stylesheet" href="./style.css">
+
+  <style>
+    body {
+      background: #f4f7fc;
+      font-family: Inter, Arial, sans-serif;
+      color: #26364e;
+    }
+
+    .account-header {
+      background: white;
+      border-bottom: 1px solid #e5eaf3;
+      padding: 20px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .account-header h1 {
+      font-size: 22px;
+      margin: 0;
+      color: #1c62c5;
+    }
+
+    .account-container {
+      max-width: 1150px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    .account-card {
+      background: white;
+      border: 1px solid #e5eaf3;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 16px #142d4d08;
+    }
+
+    .account-card h2 {
+      font-size: 19px;
+      margin: 0 0 12px;
+    }
+
+    .account-card p {
+      color: #8290a5;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .account-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 17px;
+      margin-top: 20px;
+    }
+
+    .account-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .account-field label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .account-field input,
+    .account-field select {
+      padding: 12px;
+      width: 100%;
+      border: 1px solid #dce5ef;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .account-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .account-table {
+      overflow-x: auto;
+      margin-top: 18px;
+    }
+
+    .account-table table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+
+    .account-table th,
+    .account-table td {
+      padding: 13px;
+      text-align: left;
+      border-bottom: 1px solid #edf1f5;
+      font-size: 12px;
+    }
+
+    .account-table th {
+      background: #f6f8fc;
+      color: #6c7a91;
+    }
+
+    .account-table button {
+      padding: 8px 10px;
+      margin: 3px;
+      background: #edf4ff;
+      color: #1c62c5;
+      border: 0;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .account-table button.warning {
+      color: #bd4b51;
+      background: #fff0f0;
+    }
+
+    .account-notice {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #edf4ff;
+      color: #285eb7;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .account-notice:empty {
+      display: none;
+    }
+
+    .account-btn {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      background: #286fe3;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .account-btn.secondary {
+      background: #edf2f9;
+      color: #52667e;
+    }
+
+    .account-btn:hover {
+      opacity: .9;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .profile-grid div {
+      padding: 15px;
+      background: #f6f8fc;
+      border-radius: 10px;
+    }
+
+    .profile-grid span {
+      display: block;
+      color: #8b98a9;
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .profile-grid strong {
+      font-size: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .account-grid,
+      .profile-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .account-container {
+        padding: 0 12px;
+      }
+
+      .account-card {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="account-header">
+    <h1>HRM Workspace | Tài khoản</h1>
+    <div class="account-actions" style="margin:0">
+      <button id="backButton" class="account-btn secondary">
+        Về tổng quan
+      </button>
+      <button id="logoutButton" class="account-btn secondary">
+        Đăng xuất
+      </button>
+    </div>
+  </header>
+
+  <main class="account-container">
+    <section class="account-card">
+      <h2>Tài khoản của tôi</h2>
+      <p id="currentUser">Đang tải thông tin...</p>
+    </section>
+
+    <!-- CHỈ ADMIN ĐƯỢC QUẢN LÝ -->
+    <div id="adminArea" hidden>
+      <section class="account-card">
+        <h2>Tạo tài khoản mới</h2>
+        <p>Admin cấp tài khoản cho HR và nhân viên.</p>
+
+        <form id="createUserForm">
+          <div class="account-grid">
+            <div class="account-field">
+              <label for="newEmail">Email đăng nhập</label>
+              <input id="newEmail" type="email"
+                maxlength="150" required>
+            </div>
+
+            <div class="account-field">
+              <label for="newPassword">Mật khẩu ban đầu</label>
+              <input id="newPassword" type="password"
+                minlength="12" maxlength="128" required
+                autocomplete="new-password">
+            </div>
+
+            <div class="account-field">
+              <label for="newRole">Vai trò</label>
+              <select id="newRole" required>
+                <option value="employee">Nhân viên</option>
+                <option value="hr">Nhân sự (HR)</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="account-field">
+              <label for="newEmployee">
+                Liên kết hồ sơ nhân viên
+              </label>
+              <select id="newEmployee">
+                <option value="">Không liên kết</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="account-actions">
+            <button type="submit" class="account-btn">
+              + Tạo tài khoản
+            </button>
+          </div>
+        </form>
+        <p id="createNotice" class="account-notice"></p>
+      </section>
+
+      <section class="account-card">
+        <h2>Danh sách tài khoản</h2>
+        <p>Quản lý quyền truy cập và đặt lại mật khẩu.</p>
+
+        <div class="account-table">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Nhân viên</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+        <p id="usersNotice" class="account-notice"></p>
+      </section>
+    </div>
+
+    <!-- HỒ SƠ CÁ NHÂN -->
+    <section class="account-card" id="profileArea" hidden>
+      <h2>Hồ sơ nhân viên của tôi</h2>
+      <div class="profile-grid" id="profileContent"></div>
+    </section>
+
+    <section class="account-card" id="myAttendanceArea" hidden>
+      <h2>Lịch sử chấm công của tôi</h2>
+      <div class="account-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Ngày</th>
+              <th>Giờ vào</th>
+              <th>Giờ ra</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="myAttendanceTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ĐỔI MẬT KHẨU -->
+    <section class="account-card">
+      <h2>Đổi mật khẩu</h2>
+      <p>Mật khẩu mới cần tối thiểu 12 ký tự.</p>
+
+      <form id="passwordForm">
+        <div class="account-grid">
+          <div class="account-field">
+            <label for="oldPassword">Mật khẩu hiện tại</label>
+            <input id="oldPassword" type="password" required
+              autocomplete="current-password">
+          </div>
+
+          <div class="account-field">
+            <label for="changePassword">Mật khẩu mới</label>
+            <input id="changePassword" type="password"
+              minlength="12" maxlength="128" required
+              autocomplete="new-password">
+          </div>
+
+          <div class="account-field">
+            <label for="confirmPassword">Nhập lại mật khẩu mới</label>
+            <input id="confirmPassword" type="password"
+              minlength="12" maxlength="128" required
+              autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="account-actions">
+          <button type="submit" class="account-btn">
+            Đổi mật khẩu
+          </button>
+        </div>
+      </form>
+      <p id="passwordNotice" class="account-notice"></p>
+    </section>
+  </main>
+
+  <script src="./accounts.js"></script>
+</body>
+</html>

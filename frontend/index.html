@@ -1,0 +1,759 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HRM Workspace | Quản lý nhân sự</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body class="app-page">
+  <div class="app-shell">
+
+    <!-- MENU BÊN TRÁI -->
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark">H</span>
+        <span>
+          <strong>HRM Workspace</strong>
+          <small>Quản trị nhân sự</small>
+        </span>
+      </a>
+
+      <div class="sidebar-label">KHÔNG GIAN LÀM VIỆC</div>
+
+      <nav class="side-nav">
+
+        <button
+          type="button"
+          class="nav-item active"
+          data-section="dashboard"
+          onclick="showSection('dashboard')">
+          <span class="nav-icon">▦</span>
+          Tổng quan
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          data-section="employees"
+          onclick="showSection('employees')">
+          <span class="nav-icon">♙</span>
+          Nhân viên
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          data-section="departments"
+          onclick="showSection('departments')">
+          <span class="nav-icon">▤</span>
+          Phòng ban
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          data-section="attendance"
+          onclick="showSection('attendance')">
+          <span class="nav-icon">◷</span>
+          Chấm công
+        </button>
+
+        <!-- CHỈ ADMIN ĐƯỢC NHÌN THẤY -->
+        <a
+          id="adminAccountsMenu"
+          class="nav-item"
+          href="./accounts.html"
+          hidden
+          style="display:none">
+          <span class="nav-icon">♙</span>
+          Quản lý tài khoản
+        </a>
+
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="user-summary">
+          <div class="avatar" id="sidebarAvatar">A</div>
+          <div class="user-copy">
+            <strong id="sidebarUser">Quản trị viên</strong>
+            <span id="sidebarRole">Administrator</span>
+          </div>
+        </div>
+
+        <button
+          class="logout-button"
+          type="button"
+          onclick="logout()">
+          ⇥ <span>Đăng xuất</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <div class="app-main">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button
+            type="button"
+            class="menu-toggle"
+            id="menuToggle"
+            aria-label="Mở menu">☰</button>
+
+          <div>
+            <p class="eyebrow">
+              HỆ THỐNG QUẢN LÝ NHÂN SỰ
+            </p>
+            <h1 id="pageTitle">Tổng quan</h1>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <span class="status-pill">
+            <span class="status-dot"></span>
+            Hệ thống HRM
+          </span>
+          <div class="top-avatar" id="topAvatar">A</div>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- TỔNG QUAN -->
+        <section id="dashboard" class="page-section">
+
+          <div class="welcome-banner">
+            <div>
+              <span class="banner-eyebrow">
+                HRM • WORKSPACE
+              </span>
+
+              <h2>Chào mừng trở lại 👋</h2>
+
+              <p>
+                Quản lý đội ngũ, phòng ban và theo dõi
+                chấm công tập trung trên một hệ thống.
+              </p>
+            </div>
+
+            <div class="banner-art" aria-hidden="true">▦</div>
+          </div>
+
+          <div class="stats-grid">
+
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Nhân viên</span>
+                <span class="stat-icon blue">♙</span>
+              </div>
+              <strong id="statEmployees">—</strong>
+              <small>Tổng nhân viên trong hệ thống</small>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Phòng ban</span>
+                <span class="stat-icon purple">▤</span>
+              </div>
+              <strong id="statDepartments">—</strong>
+              <small>Phòng ban đang quản lý</small>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Chấm công hôm nay</span>
+                <span class="stat-icon green">✓</span>
+              </div>
+              <strong id="statToday">—</strong>
+              <small>Nhân viên có bản ghi hôm nay</small>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Đi muộn</span>
+                <span class="stat-icon orange">◷</span>
+              </div>
+              <strong id="statLate">—</strong>
+              <small>Bản ghi đi muộn hôm nay</small>
+            </article>
+
+          </div>
+
+          <div class="dashboard-grid">
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Thao tác nhanh</h3>
+                  <p>Truy cập chức năng thường dùng</p>
+                </div>
+              </div>
+
+              <div class="quick-grid">
+                <button
+                  type="button"
+                  onclick="showSection('employees'); openAddForm()">
+                  <span class="quick-icon blue">＋</span>
+                  <strong>Thêm nhân viên</strong>
+                  <small>Tạo hồ sơ mới</small>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="showSection('departments'); openAddDepartment()">
+                  <span class="quick-icon purple">＋</span>
+                  <strong>Thêm phòng ban</strong>
+                  <small>Mở rộng bộ phận</small>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="showSection('attendance'); openAddAttendance()">
+                  <span class="quick-icon green">◷</span>
+                  <strong>Chấm công</strong>
+                  <small>Ghi nhận ngày làm</small>
+                </button>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Thông tin hệ thống</h3>
+                  <p>Trạng thái hoạt động</p>
+                </div>
+              </div>
+
+              <div class="system-info">
+                <div>
+                  <span>Ứng dụng</span>
+                  <strong>HRM Management</strong>
+                </div>
+
+                <div>
+                  <span>Cơ sở dữ liệu</span>
+                  <strong>PostgreSQL</strong>
+                </div>
+
+                <div>
+                  <span>Trạng thái API</span>
+                  <strong id="apiStatus">Đang kiểm tra...</strong>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- NHÂN VIÊN -->
+        <section id="employees" class="page-section" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>Danh sách nhân viên</h2>
+              <p>Quản lý hồ sơ và thông tin nhân sự trong công ty.</p>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="openAddForm()">
+              ＋ Thêm nhân viên
+            </button>
+          </div>
+
+          <div class="panel table-panel">
+            <div class="table-tools">
+              <label class="search-box">
+                <span>⌕</span>
+                <input
+                  id="searchInput"
+                  type="search"
+                  placeholder="Tìm theo tên hoặc email...">
+              </label>
+
+              <span class="table-count" id="employeeCount">
+                0 nhân viên
+              </span>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Chức vụ</th>
+                    <th>Lương</th>
+                    <th>Phòng ban</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="employeeTable">
+                  <tr>
+                    <td colspan="8">Đang tải dữ liệu...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- FORM NHÂN VIÊN -->
+          <div id="formContainer" class="panel editor-panel" hidden>
+            <div class="panel-header">
+              <div>
+                <h3 id="formTitle">Thêm nhân viên</h3>
+                <p>Nhập thông tin và lưu hồ sơ</p>
+              </div>
+              <button
+                type="button"
+                class="icon-close"
+                onclick="closeForm()">×</button>
+            </div>
+
+            <form id="employeeForm" class="editor-form">
+              <input type="hidden" id="employeeId">
+
+              <div class="form-grid">
+                <div class="field">
+                  <label for="fullName">
+                    Họ và tên <b>*</b>
+                  </label>
+                  <input
+                    id="fullName"
+                    type="text"
+                    maxlength="150"
+                    placeholder="Nguyễn Văn A"
+                    required>
+                </div>
+
+                <div class="field">
+                  <label for="email">
+                    Email <b>*</b>
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    maxlength="150"
+                    placeholder="name@company.com"
+                    required>
+                </div>
+
+                <div class="field">
+                  <label for="phone">Số điện thoại</label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    maxlength="20"
+                    placeholder="09xxxxxxxx">
+                </div>
+
+                <div class="field">
+                  <label for="position">Chức vụ</label>
+                  <input
+                    id="position"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Nhân viên">
+                </div>
+
+                <div class="field">
+                  <label for="salary">
+                    Lương (VNĐ) <b>*</b>
+                  </label>
+                  <input
+                    id="salary"
+                    type="number"
+                    min="0"
+                    max="9999999999.99"
+                    step="0.01"
+                    placeholder="10000000"
+                    required>
+                </div>
+
+                <div class="field">
+                  <label for="departmentId">
+                    Phòng ban <b>*</b>
+                  </label>
+                  <select id="departmentId" required>
+                    <option value="">Đang tải...</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-outline"
+                  onclick="closeForm()">Hủy</button>
+                <button
+                  type="submit"
+                  class="btn btn-primary">
+                  Lưu nhân viên
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- PHÒNG BAN -->
+        <section id="departments" class="page-section" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>Quản lý phòng ban</h2>
+              <p>Tổ chức và theo dõi các bộ phận trong doanh nghiệp.</p>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="openAddDepartment()">
+              ＋ Thêm phòng ban
+            </button>
+          </div>
+
+          <div class="panel table-panel">
+            <div class="table-tools">
+              <label class="search-box">
+                <span>⌕</span>
+                <input
+                  id="departmentSearch"
+                  type="search"
+                  placeholder="Tìm tên hoặc mô tả phòng ban...">
+              </label>
+
+              <span class="table-count" id="departmentCount">
+                0 phòng ban
+              </span>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Tên phòng ban</th>
+                    <th>Mô tả</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="departmentTable">
+                  <tr>
+                    <td colspan="4">Đang tải dữ liệu...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- FORM PHÒNG BAN -->
+          <div
+            id="departmentFormContainer"
+            class="panel editor-panel"
+            hidden>
+
+            <div class="panel-header">
+              <div>
+                <h3 id="departmentFormTitle">Thêm phòng ban</h3>
+                <p>Thông tin bộ phận</p>
+              </div>
+              <button
+                type="button"
+                class="icon-close"
+                onclick="closeDepartmentForm()">×</button>
+            </div>
+
+            <form id="departmentForm" class="editor-form">
+              <input type="hidden" id="editDepartmentId">
+
+              <div class="form-grid">
+                <div class="field">
+                  <label for="departmentName">
+                    Tên phòng ban <b>*</b>
+                  </label>
+                  <input
+                    id="departmentName"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Phòng Công nghệ thông tin"
+                    required>
+                </div>
+
+                <div class="field span-2">
+                  <label for="departmentDescription">
+                    Mô tả
+                  </label>
+                  <textarea
+                    id="departmentDescription"
+                    rows="3"
+                    maxlength="5000"
+                    placeholder="Mô tả chức năng phòng ban..."></textarea>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-outline"
+                  onclick="closeDepartmentForm()">Hủy</button>
+                <button
+                  type="submit"
+                  class="btn btn-primary">
+                  Lưu phòng ban
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- CHẤM CÔNG -->
+        <section id="attendance" class="page-section" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>Quản lý chấm công</h2>
+              <p>Ghi nhận ngày làm việc, giờ vào/ra và trạng thái.</p>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="openAddAttendance()">
+              ＋ Thêm chấm công
+            </button>
+          </div>
+
+          <div class="panel table-panel">
+            <div class="table-tools">
+              <label class="search-box">
+                <span>⌕</span>
+                <input
+                  id="attendanceSearch"
+                  type="search"
+                  placeholder="Tìm theo tên nhân viên...">
+              </label>
+
+              <div class="filter-group">
+                <label for="attendanceMonth">Lọc tháng</label>
+                <input id="attendanceMonth" type="month">
+              </div>
+
+              <button
+                class="btn btn-outline btn-sm"
+                type="button"
+                onclick="clearAttendanceFilter()">
+                Bỏ lọc
+              </button>
+
+              <span class="table-count" id="attendanceCount">
+                0 bản ghi
+              </span>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nhân viên</th>
+                    <th>Ngày làm việc</th>
+                    <th>Giờ vào</th>
+                    <th>Giờ ra</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTable">
+                  <tr>
+                    <td colspan="7">Đang tải dữ liệu...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- FORM CHẤM CÔNG -->
+          <div
+            id="attendanceFormContainer"
+            class="panel editor-panel"
+            hidden>
+
+            <div class="panel-header">
+              <div>
+                <h3 id="attendanceFormTitle">Thêm chấm công</h3>
+                <p>Nhập thông tin chấm công</p>
+              </div>
+              <button
+                type="button"
+                class="icon-close"
+                onclick="closeAttendanceForm()">×</button>
+            </div>
+
+            <form id="attendanceForm" class="editor-form">
+              <input type="hidden" id="attendanceId">
+
+              <div class="form-grid">
+                <div class="field">
+                  <label for="attendanceEmployee">
+                    Nhân viên <b>*</b>
+                  </label>
+                  <select id="attendanceEmployee" required>
+                    <option value="">Chọn nhân viên</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label for="workDate">
+                    Ngày làm việc <b>*</b>
+                  </label>
+                  <input id="workDate" type="date" required>
+                </div>
+
+                <div class="field">
+                  <label for="checkIn">Giờ vào</label>
+                  <input id="checkIn" type="time">
+                </div>
+
+                <div class="field">
+                  <label for="checkOut">Giờ ra</label>
+                  <input id="checkOut" type="time">
+                </div>
+
+                <div class="field">
+                  <label for="attendanceStatus">
+                    Trạng thái <b>*</b>
+                  </label>
+                  <select id="attendanceStatus" required>
+                    <option value="present">Có mặt</option>
+                    <option value="late">Đi muộn</option>
+                    <option value="absent">Vắng mặt</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-outline"
+                  onclick="closeAttendanceForm()">Hủy</button>
+                <button
+                  type="submit"
+                  class="btn btn-primary">
+                  Lưu chấm công
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </main>
+
+      <footer class="footer">
+        © 2026 HRM Workspace · Hệ thống Quản lý Nhân sự
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- POPUP -->
+  <div id="customPopup" class="popup-overlay" hidden>
+    <div
+      class="popup-box"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="popupTitle"
+      aria-describedby="popupMessage">
+
+      <div class="popup-symbol">✦</div>
+      <h3 id="popupTitle">Thông báo</h3>
+      <p id="popupMessage"></p>
+
+      <div class="popup-actions">
+        <button
+          id="popupCancel"
+          type="button"
+          class="btn btn-outline"
+          hidden>
+          Hủy
+        </button>
+        <button
+          id="popupOk"
+          type="button"
+          class="btn btn-primary">
+          Đồng ý
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT CHÍNH -->
+  <script src="./script.js"></script>
+
+  <!-- KIỂM TRA VAI TRÒ HIỂN THỊ MENU -->
+  <script>
+    async function setupAccountMenu() {
+      const menu = document.getElementById("adminAccountsMenu");
+      if (!menu) return;
+
+      // Mặc định không hiển thị
+      menu.hidden = true;
+      menu.style.display = "none";
+
+      const token = sessionStorage.getItem("hrm_token");
+
+      if (!token) {
+        window.location.replace("./login.html");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "/api/auth/me",
+          {
+            headers: {
+              Authorization: "Bearer " + token
+            }
+          }
+        );
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("hrm_token");
+          sessionStorage.removeItem("hrm_user");
+          window.location.replace("./login.html");
+          return;
+        }
+
+        if (!response.ok) {
+          console.error("Không xác minh được quyền tài khoản");
+          return;
+        }
+
+        const user = await response.json();
+
+        if (user.role === "employee") {
+          window.location.replace("./accounts.html");
+          return;
+        }
+
+        // Chỉ Admin nhìn thấy nút Quản lý tài khoản
+        if (user.role === "admin") {
+          menu.hidden = false;
+          menu.style.display = "flex";
+        }
+
+      } catch (error) {
+        console.error("Không kiểm tra được vai trò:", error);
+      }
+    }
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      setupAccountMenu
+    );
+  </script>
+
+</body>
+</html>
