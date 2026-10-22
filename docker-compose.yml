@@ -1,8 +1,8 @@
 
 services:
-  # ==============================
-  # DATABASE POSTGRESQL
-  # ==============================
+  # ==================================
+  # POSTGRESQL
+  # ==================================
   postgres:
     image: postgres:16
     container_name: hrm-postgres
@@ -28,9 +28,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # ==============================
+  # ==================================
   # PGADMIN
-  # ==============================
+  # ==================================
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: hrm-pgadmin
@@ -50,9 +50,9 @@ services:
     networks:
       - hrm-network
 
-  # ==============================
+  # ==================================
   # BACKEND NODE.JS
-  # ==============================
+  # ==================================
   backend:
     build:
       context: ./backend
@@ -81,9 +81,9 @@ services:
     networks:
       - hrm-network
 
-  # ==============================
+  # ==================================
   # NGINX REVERSE PROXY
-  # ==============================
+  # ==================================
   nginx:
     image: nginx:stable-alpine
     container_name: hrm-nginx
@@ -91,6 +91,9 @@ services:
 
     ports:
       - "127.0.0.1:8080:80"
+
+    expose:
+      - "8081"
 
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
@@ -102,15 +105,132 @@ services:
     networks:
       - hrm-network
 
-# ==============================
+  # ==================================
+  # PROMETHEUS
+  # ==================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hrm-prometheus
+    restart: unless-stopped
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    ports:
+      - "127.0.0.1:9090:9090"
+
+    networks:
+      - hrm-network
+
+  # ==================================
+  # GRAFANA
+  # ==================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hrm-grafana
+    restart: unless-stopped
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+    ports:
+      - "127.0.0.1:3001:3000"
+
+    depends_on:
+      - prometheus
+
+    networks:
+      - hrm-network
+
+  # ==================================
+  # CADVISOR - DOCKER METRICS
+  # ==================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: hrm-cadvisor
+    restart: unless-stopped
+    privileged: true
+
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+
+    devices:
+      - /dev/kmsg:/dev/kmsg
+
+    expose:
+      - "8080"
+
+    networks:
+      - hrm-network
+
+  # ==================================
+  # POSTGRESQL EXPORTER - ĐÃ SỬA
+  # ==================================
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: hrm-postgres-exporter
+    restart: unless-stopped
+
+    environment:
+      DATA_SOURCE_URI: "postgres:5432/hrm_db?sslmode=disable"
+      DATA_SOURCE_USER: hrm_user
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    expose:
+      - "9187"
+
+    networks:
+      - hrm-network
+
+  # ==================================
+  # NGINX EXPORTER
+  # ==================================
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.5.1
+    container_name: hrm-nginx-exporter
+    restart: unless-stopped
+
+    command:
+      - "--nginx.scrape-uri=http://nginx:8081/nginx_status"
+
+    depends_on:
+      - nginx
+
+    expose:
+      - "9113"
+
+    networks:
+      - hrm-network
+
+# ==================================
 # NETWORK
-# ==============================
+# ==================================
 networks:
   hrm-network:
     driver: bridge
 
-# ==============================
-# VOLUME
-# ==============================
+# ==================================
+# VOLUMES
+# ==================================
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
