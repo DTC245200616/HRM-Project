@@ -178,7 +178,7 @@ services:
       - hrm-network
 
   # ==================================
-  # POSTGRESQL EXPORTER - ĐÃ SỬA
+  # POSTGRESQL EXPORTER
   # ==================================
   postgres-exporter:
     image: quay.io/prometheuscommunity/postgres-exporter:latest
@@ -220,6 +220,48 @@ services:
     networks:
       - hrm-network
 
+  # ==================================
+  # LOKI - CENTRALIZED LOG STORAGE
+  # ==================================
+  loki:
+    image: grafana/loki:3.5.12
+    container_name: hrm-loki
+    restart: unless-stopped
+
+    command:
+      - "-config.file=/etc/loki/local-config.yaml"
+
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+
+    ports:
+      - "127.0.0.1:3100:3100"
+
+    networks:
+      - hrm-network
+
+  # ==================================
+  # PROMTAIL - LOG COLLECTOR
+  # ==================================
+  promtail:
+    image: grafana/promtail:3.5.12
+    container_name: hrm-promtail
+    restart: unless-stopped
+
+    command:
+      - "-config.file=/etc/promtail/config.yml"
+
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    depends_on:
+      - loki
+
+    networks:
+      - hrm-network
+
 # ==================================
 # NETWORK
 # ==================================
@@ -234,3 +276,4 @@ volumes:
   postgres_data:
   prometheus_data:
   grafana_data:
+  loki_data:
