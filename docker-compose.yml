@@ -20,7 +20,7 @@ services:
       - "127.0.0.1:5432:5432"
 
     networks:
-      - hrm-network
+      - hrm-database
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hrm_user -d hrm_db"]
@@ -48,10 +48,10 @@ services:
         condition: service_healthy
 
     networks:
-      - hrm-network
+      - hrm-database
 
   # ==================================
-  # BACKEND NODE.JS
+  # BACKEND - NON-ROOT + HARDENING
   # ==================================
   backend:
     build:
@@ -60,6 +60,12 @@ services:
 
     container_name: hrm-backend
     restart: unless-stopped
+
+    mem_limit: 512m
+    cpus: 1.0
+
+    security_opt:
+      - no-new-privileges:true
 
     environment:
       NODE_ENV: production
@@ -79,7 +85,8 @@ services:
       - "3000"
 
     networks:
-      - hrm-network
+      - hrm-frontend
+      - hrm-database
 
   # ==================================
   # NGINX REVERSE PROXY
@@ -103,7 +110,7 @@ services:
       - backend
 
     networks:
-      - hrm-network
+      - hrm-frontend
 
   # ==================================
   # PROMETHEUS
@@ -126,7 +133,7 @@ services:
       - "127.0.0.1:9090:9090"
 
     networks:
-      - hrm-network
+      - hrm-monitoring
 
   # ==================================
   # GRAFANA
@@ -151,15 +158,18 @@ services:
       - prometheus
 
     networks:
-      - hrm-network
+      - hrm-monitoring
 
   # ==================================
-  # CADVISOR - DOCKER METRICS
+  # CADVISOR - DOCKER MONITORING
   # ==================================
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: hrm-cadvisor
     restart: unless-stopped
+
+    # Cấu hình thực hành hiện tại
+    # Cần hạn chế quyền trong bước bảo mật nâng cao
     privileged: true
 
     volumes:
@@ -175,7 +185,7 @@ services:
       - "8080"
 
     networks:
-      - hrm-network
+      - hrm-monitoring
 
   # ==================================
   # POSTGRESQL EXPORTER
@@ -198,7 +208,8 @@ services:
       - "9187"
 
     networks:
-      - hrm-network
+      - hrm-database
+      - hrm-monitoring
 
   # ==================================
   # NGINX EXPORTER
@@ -218,10 +229,11 @@ services:
       - "9113"
 
     networks:
-      - hrm-network
+      - hrm-frontend
+      - hrm-monitoring
 
   # ==================================
-  # LOKI - CENTRALIZED LOG STORAGE
+  # LOKI
   # ==================================
   loki:
     image: grafana/loki:3.5.12
@@ -239,10 +251,10 @@ services:
       - "127.0.0.1:3100:3100"
 
     networks:
-      - hrm-network
+      - hrm-monitoring
 
   # ==================================
-  # PROMTAIL - LOG COLLECTOR
+  # PROMTAIL
   # ==================================
   promtail:
     image: grafana/promtail:3.5.12
@@ -260,17 +272,23 @@ services:
       - loki
 
     networks:
-      - hrm-network
+      - hrm-monitoring
 
 # ==================================
-# NETWORK
+# NETWORK ISOLATION
 # ==================================
 networks:
-  hrm-network:
+  hrm-frontend:
+    driver: bridge
+
+  hrm-database:
+    driver: bridge
+
+  hrm-monitoring:
     driver: bridge
 
 # ==================================
-# VOLUMES
+# PERSISTENT VOLUMES
 # ==================================
 volumes:
   postgres_data:
